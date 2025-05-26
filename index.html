@@ -200,7 +200,7 @@
       });
     });
 
-    function sendOrderToGoogleSheet(orderData) {
+function sendOrderToGoogleSheet(orderData) {
   fetch('https://script.google.com/macros/s/AKfycbykSbguEDJCfUF6Y1d3mdWJu_nu7OkawJngWd5y0FnXeJLWj-PoOBQymX9CAxWghOFn/exec', {
     method: 'POST',
     body: JSON.stringify(orderData),
@@ -216,27 +216,8 @@
     console.error("Lỗi khi gửi đơn hàng:", error);
     alert("Có lỗi khi gửi đơn hàng.");
   });
-}
-
-
-  function formatOrderMessage(cart, name, phone, address, note) {
-    let message = "🛒 Đơn hàng mới từ Website\n\n";
-    message += `👤 Tên khách hàng: ${name}\n`;
-    message += `📞 Số điện thoại: ${phone}\n`;
-    message += `📍 Địa chỉ: ${address}\n`;
-
-    if (note && note.trim() !== '') {
-      message += `📝 Ghi chú: ${note.trim()}\n`;
-    }
-
-    message += `\n📦 Món đã đặt:\n`;
-    cart.forEach(item => {
-      message += `• ${item.name} x ${item.quantity} = ${itemTotal / 1000}k\n`;
-    });
-
-    return message;
-  }
-
+}   
+ 
   const orderData = {
   name,
   phone,
@@ -251,6 +232,7 @@
 };
 
 sendOrderToGoogleSheet(orderData);
+
 
     if (!name || !phone || !address) {
       alert("Vui lòng nhập đầy đủ thông tin khách hàng!");
