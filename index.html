@@ -201,7 +201,30 @@
     });
 
     <script>
-  const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1376485604220731392/lOhqRmOulcR_lvUS11rOQxAXzRaitOAnjAYpjx0Fi_PNTHHsSomae0bdrYB1SsSeXBe0'; // <-- thay bằng webhook thật
+  const SHEET_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbykSbguEDJCfUF6Y1d3mdWJu_nu7OkawJngWd5y0FnXeJLWj-PoOBQymX9CAxWghOFn/exec'; // ← Thay bằng Web App URL thật
+
+function sendOrderToGoogleSheet(name, phone, address, note, cart) {
+  fetch(SHEET_WEBHOOK_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      name, phone, address, note, cart
+    })
+  })
+  .then(res => res.text())
+  .then(msg => {
+    console.log("Đã gửi đơn:", msg);
+  })
+  .catch(err => {
+    console.error("Lỗi gửi đơn vào Google Sheet:", err);
+  });
+}
+
+sendOrderToGoogleSheet(name, phone, address, note, cart);
+
+    const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1376485604220731392/lOhqRmOulcR_lvUS11rOQxAXzRaitOAnjAYpjx0Fi_PNTHHsSomae0bdrYB1SsSeXBe0'; // <-- thay bằng webhook thật
 
   function sendDiscordMessage(message) {
     fetch(DISCORD_WEBHOOK_URL, {
