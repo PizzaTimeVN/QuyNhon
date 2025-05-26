@@ -201,28 +201,54 @@
     });
 
     <script>
-  const SHEET_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbykSbguEDJCfUF6Y1d3mdWJu_nu7OkawJngWd5y0FnXeJLWj-PoOBQymX9CAxWghOFn/exec'; // ← Thay bằng Web App URL thật
+<script>
+  const SHEET_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbykSbguEDJCfUF6Y1d3mdWJu_nu7OkawJngWd5y0FnXeJLWj-PoOBQymX9CAxWghOFn/exec';
 
-function sendOrderToGoogleSheet(name, phone, address, note, cart) {
-  fetch(SHEET_WEBHOOK_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      name, phone, address, note, cart
+  function sendOrderToGoogleSheet(name, phone, address, note, cart) {
+    const total = cart.reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0);
+
+    fetch(SHEET_WEBHOOK_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name,
+        phone,
+        address,
+        note,
+        cart,
+        total
+      })
     })
-  })
-  .then(res => res.text())
-  .then(msg => {
-    console.log("Đã gửi đơn:", msg);
-  })
-  .catch(err => {
-    console.error("Lỗi gửi đơn vào Google Sheet:", err);
-  });
-}
+    .then(res => res.text())
+    .then(msg => {
+      console.log("✅ Đã gửi đơn:", msg);
+      alert("Đơn hàng đã được gửi! Cảm ơn bạn ❤️");
+    })
+    .catch(err => {
+      console.error("❌ Lỗi gửi đơn vào Google Sheet:", err);
+      alert("Có lỗi khi gửi đơn. Vui lòng thử lại.");
+    });
+  }
 
-sendOrderToGoogleSheet(name, phone, address, note, cart);
+  // 👉 Ví dụ gọi hàm gửi đơn (gọi khi khách bấm nút "Đặt hàng")
+  function handleOrderSubmit() {
+    const name = document.getElementById("name").value;
+    const phone = document.getElementById("phone").value;
+    const address = document.getElementById("address").value;
+    const note = document.getElementById("note").value;
+
+    const cart = [
+      { name: "Pizza Hải Sản", quantity: 1, price: 120000 },
+      { name: "Khoai Tây Chiên", quantity: 2, price: 30000 }
+    ];
+
+    sendOrderToGoogleSheet(name, phone, address, note, cart);
+  }
+</script>
+
+      sendOrderToGoogleSheet(name, phone, address, note, cart);
 
     const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1376485604220731392/lOhqRmOulcR_lvUS11rOQxAXzRaitOAnjAYpjx0Fi_PNTHHsSomae0bdrYB1SsSeXBe0'; // <-- thay bằng webhook thật
 
