@@ -200,42 +200,7 @@
       });
     });
 
-    const SHEET_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbykSbguEDJCfUF6Y1d3mdWJu_nu7OkawJngWd5y0FnXeJLWj-PoOBQymX9CAxWghOFn/exec';
-const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1376485604220731392/lOhqRmOulcR_lvUS11rOQxAXzRaitOAnjAYpjx0Fi_PNTHHsSomae0bdrYB1SsSeXBe0';
-
-function sendOrderToGoogleSheet(name, phone, address, note, cart) {
-  const total = cart.reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0);
-
-  return fetch(SHEET_WEBHOOK_URL, {
-    method: 'POST',
-    mode: 'cors',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      name,
-      phone,
-      address,
-      note,
-      cart,
-      total
-    })
-  })
-  .then(res => {
-    if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status}`);
-    }
-    return res.text();
-  })
-  .then(msg => {
-    console.log("✅ Đã gửi đơn vào Google Sheet:", msg);
-    return true;
-  })
-  .catch(err => {
-    console.error("❌ Lỗi gửi đơn vào Google Sheet:", err);
-    return false;
-  });
-}
+ const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1376485604220731392/lOhqRmOulcR_lvUS11rOQxAXzRaitOAnjAYpjx0Fi_PNTHHsSomae0bdrYB1SsSeXBe0';
 
 function sendDiscordMessage(message) {
   return fetch(DISCORD_WEBHOOK_URL, {
@@ -244,14 +209,10 @@ function sendDiscordMessage(message) {
     headers: { 
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({
-      content: message
-    })
+    body: JSON.stringify({ content: message })
   })
   .then(response => {
-    if (!response.ok) {
-      throw new Error(`Discord HTTP error! status: ${response.status}`);
-    }
+    if (!response.ok) throw new Error(`Discord HTTP error! status: ${response.status}`);
     console.log("✅ Đã gửi thông báo Discord thành công");
     return true;
   })
@@ -264,25 +225,23 @@ function sendDiscordMessage(message) {
 function formatOrderMessage(cart, name, phone, address, note) {
   let message = `🛒 ĐƠN HÀNG MỚI\n👤 Khách: ${name}\n📞 SĐT: ${phone}\n🏠 Địa chỉ: ${address}\n📝 Ghi chú: ${note || "Không có"}\n\n📦 Món đặt:\n`;
   let total = 0;
-  
+
   cart.forEach(item => {
     const itemTotal = item.price * item.quantity;
     message += `🍕 ${item.name} x${item.quantity} = ${Math.round(itemTotal / 1000)}k\n`;
     total += itemTotal;
   });
-  
+
   message += `\n💰 Tổng cộng: ${Math.round(total / 1000)}k`;
   return message;
 }
 
-// Sửa lại event listener để xử lý async/await đúng cách
 document.getElementById('place-order').addEventListener('click', async () => {
   const name = document.getElementById('customer-name').value.trim();
   const phone = document.getElementById('customer-phone').value.trim();
   const address = document.getElementById('customer-address').value.trim();
   const note = document.getElementById('customer-note').value.trim();
 
-  // Validation
   if (!name || !phone || !address) {
     alert("Vui lòng nhập đầy đủ thông tin khách hàng!");
     return;
@@ -292,63 +251,26 @@ document.getElementById('place-order').addEventListener('click', async () => {
     return;
   }
 
-  // Disable nút đặt hàng để tránh click nhiều lần
   const orderButton = document.getElementById('place-order');
   orderButton.disabled = true;
   orderButton.textContent = 'Đang xử lý...';
 
   try {
-    // Format message cho Discord
     const message = formatOrderMessage(cart, name, phone, address, note);
-    
-    // Gửi song song đến cả Discord và Google Sheet
-    const [discordResult, sheetResult] = await Promise.allSettled([
-      sendDiscordMessage(message),
-      sendOrderToGoogleSheet(name, phone, address, note, cart)
-    ]);
+    const success = await sendDiscordMessage(message);
 
-    // Kiểm tra kết quả
-    let successCount = 0;
-    let errorMessages = [];
-
-    if (discordResult.status === 'fulfilled' && discordResult.value) {
-      successCount++;
-    } else {
-      errorMessages.push('Discord');
-    }
-
-    if (sheetResult.status === 'fulfilled' && sheetResult.value) {
-      successCount++;
-    } else {
-      errorMessages.push('Google Sheet');
-    }
-
-    // Hiển thị kết quả cho người dùng
-    if (successCount > 0) {
-      // Ít nhất một service thành công
-      let successMessage = "Đơn hàng đã được gửi thành công!";
-      if (errorMessages.length > 0) {
-        successMessage += `\n(Lưu ý: Có lỗi với ${errorMessages.join(', ')})`;
-      }
-      successMessage += "\nTụi mình sẽ gọi lại xác nhận đơn trong vài phút nhé!";
-      alert(successMessage);
-
-      // Hiển thị phần cảm ơn + thông tin đơn
+    if (success) {
+      alert("✅ Đơn hàng đã được gửi! Tụi mình sẽ gọi lại xác nhận đơn trong vài phút nhé!");
       showOrderSummary(name, phone, address, note);
-      
-      // Reset form và cart
       resetOrderForm();
-      
     } else {
-      // Cả hai đều thất bại
-      alert("❌ Có lỗi khi gửi đơn hàng. Vui lòng thử lại hoặc liên hệ trực tiếp qua điện thoại!");
+      alert("❌ Gửi không thành công đến Discord. Vui lòng thử lại!");
     }
 
   } catch (error) {
     console.error("Lỗi không mong muốn:", error);
     alert("❌ Có lỗi không mong muốn. Vui lòng thử lại!");
   } finally {
-    // Enable lại nút đặt hàng
     orderButton.disabled = false;
     orderButton.textContent = 'Đặt hàng';
   }
@@ -359,13 +281,13 @@ function showOrderSummary(name, phone, address, note) {
 
   const detailDiv = document.getElementById('order-detail');
   detailDiv.innerHTML = '';
-  
+
   cart.forEach(item => {
     const p = document.createElement('p');
     p.textContent = `- ${item.name} x ${item.quantity}`;
     detailDiv.appendChild(p);
   });
-  
+
   detailDiv.innerHTML += `
     <hr class="my-2"/>
     <p><strong>Khách hàng:</strong> ${name}</p>
