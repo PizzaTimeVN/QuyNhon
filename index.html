@@ -8,13 +8,13 @@
 </head>
 <body class="bg-gray-50 text-gray-800">
 <header class="bg-green-600 text-white p-4 text-center shadow flex items-center justify-center space-x-3">
-  <img src="https://raw.githubusercontent.com/PizzaBo93/pizzatime/main/logo.jpg" alt="Logo PizzaBo"class="h-20 w-20 rounded-full">
+  <img src="https://raw.githubusercontent.com/PizzaBo93/pizzatime/main/logo.jpg" alt="Logo PizzaBo" class="h-20 w-20 rounded-full">
   <h1 class="text-2xl font-bold">Pizza Time - Quy Nhon</h1>
-</header>T
+</header>
 
   <div class="max-w-4xl mx-auto">
     <div id="category-tabs" class="flex flex-wrap justify-between gap-2 p-2 border-b text-sm sm:text-base font-medium">
-        <button class="tab flex-1 min-w-[45%] py-2 px-3 text-center border rounded-md bg-white hover:bg-green-50" data-category="Pizza S">Pizza Size S</button>
+        <button class="tab flex-1 min-w-[45%] py-2 px-3 text-center border rounded-md bg-white hover:bg-green-50 text-green-600 border-b-2 border-green-600" data-category="Pizza S">Pizza Size S</button>
         <button class="tab flex-1 min-w-[45%] py-2 px-3 text-center border rounded-md bg-white hover:bg-green-50" data-category="Pizza L">Pizza Size L</button>
         <button class="tab flex-1 min-w-[45%] py-2 px-3 text-center border rounded-md bg-white hover:bg-green-50" data-category="Món ăn nhẹ">Món ăn nhẹ</button>
         <button class="tab flex-1 min-w-[45%] py-2 px-3 text-center border rounded-md bg-white hover:bg-green-50" data-category="Nước">Nước</button>
@@ -29,6 +29,8 @@
         <input id="customer-address" type="text" placeholder="Địa chỉ giao hàng" class="w-full mb-3 px-4 py-2 border rounded" required>
         <textarea id="customer-note" placeholder="Ghi chú (không bắt buộc)" class="w-full mb-3 px-4 py-2 border rounded h-24 resize-none"></textarea>
     </div>
+    
+    <div class="border-t p-4">
       <h2 class="text-xl font-semibold mb-3">Giỏ hàng (<span id="cart-count">0</span> món)</h2>
       <div id="cart-items" class="space-y-3 max-h-48 overflow-y-auto"></div>
       <div class="flex justify-between font-semibold text-lg my-4">
@@ -102,7 +104,6 @@
   { id: 46, name: "Trà sữa Thái", price: 20000, category: "Nước", image: "images/tradao.jpg" }
 ];
 
-
     let cart = [];
     let currentCategory = 'Pizza S';
 
@@ -159,10 +160,10 @@
             <h4 class="font-medium">${item.name}</h4>
             <p class="text-sm text-gray-600">${formatPrice(item.price)} x ${item.quantity}</p>
           </div>
-          <div class="flex space-x-2">
-            <button class="decrease w-7 h-7 rounded-full border" data-id="${item.id}">-</button>
+          <div class="flex space-x-2 items-center">
+            <button class="decrease w-7 h-7 rounded-full border text-center" data-id="${item.id}">-</button>
             <span>${item.quantity}</span>
-            <button class="increase w-7 h-7 rounded-full border bg-green-600 text-white" data-id="${item.id}">+</button>
+            <button class="increase w-7 h-7 rounded-full border bg-green-600 text-white text-center" data-id="${item.id}">+</button>
           </div>
         `;
         container.appendChild(div);
@@ -200,134 +201,117 @@
       });
     });
 
+    const SHEET_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbykSbguEDJCfUF6Y1d3mdWJu_nu7OkawJngWd5y0FnXeJLWj-PoOBQymX9CAxWghOFn/exec';
+    const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1376485604220731392/lOhqRmOulcR_lvUS11rOQxAXzRaitOAnjAYpjx0Fi_PNTHHsSomae0bdrYB1SsSeXBe0';
 
-<script>
-  const SHEET_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbykSbguEDJCfUF6Y1d3mdWJu_nu7OkawJngWd5y0FnXeJLWj-PoOBQymX9CAxWghOFn/exec';
+    function sendOrderToGoogleSheet(name, phone, address, note, cart) {
+      const total = cart.reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0);
 
-  function sendOrderToGoogleSheet(name, phone, address, note, cart) {
-    const total = cart.reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0);
-
-    fetch(SHEET_WEBHOOK_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        name,
-        phone,
-        address,
-        note,
-        cart,
-        total
+      fetch(SHEET_WEBHOOK_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name,
+          phone,
+          address,
+          note,
+          cart,
+          total
+        })
       })
-    })
-    .then(res => res.text())
-    .then(msg => {
-      console.log("✅ Đã gửi đơn:", msg);
-      alert("Đơn hàng đã được gửi! Cảm ơn bạn ❤️");
-    })
-    .catch(err => {
-      console.error("❌ Lỗi gửi đơn vào Google Sheet:", err);
-      alert("Có lỗi khi gửi đơn. Vui lòng thử lại.");
-    });
-  }
-
-  // 👉 Ví dụ gọi hàm gửi đơn (gọi khi khách bấm nút "Đặt hàng")
-  function handleOrderSubmit() {
-    const name = document.getElementById("name").value;
-    const phone = document.getElementById("phone").value;
-    const address = document.getElementById("address").value;
-    const note = document.getElementById("note").value;
-
-    const cart = [
-      { name: "Pizza Hải Sản", quantity: 1, price: 120000 },
-      { name: "Khoai Tây Chiên", quantity: 2, price: 30000 }
-    ];
-
-    sendOrderToGoogleSheet(name, phone, address, note, cart);
-  }
-</script>
-
- 
-
-    const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1376485604220731392/lOhqRmOulcR_lvUS11rOQxAXzRaitOAnjAYpjx0Fi_PNTHHsSomae0bdrYB1SsSeXBe0'; // <-- thay bằng webhook thật
-
-  function sendDiscordMessage(message) {
-    fetch(DISCORD_WEBHOOK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        content: message  // Nội dung gửi sang Discord
+      .then(res => res.text())
+      .then(msg => {
+        console.log("✅ Đã gửi đơn:", msg);
       })
-    })
-    .then(response => {
-      if (response.ok) {
-        alert("Tụi mình sẽ gọi lại xác nhận đơn trong vài phút nhé!");
-      } else {
-        alert("❌ Gửi không thành công đến Discord!");
+      .catch(err => {
+        console.error("❌ Lỗi gửi đơn vào Google Sheet:", err);
+      });
+    }
+
+    function sendDiscordMessage(message) {
+      fetch(DISCORD_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: message
+        })
+      })
+      .then(response => {
+        if (response.ok) {
+          alert("Tụi mình sẽ gọi lại xác nhận đơn trong vài phút nhé!");
+        } else {
+          alert("❌ Gửi không thành công đến Discord!");
+        }
+      })
+      .catch(error => {
+        console.error("Lỗi khi gửi Discord:", error);
+        alert("Có lỗi khi gửi đơn hàng.");
+      });
+    }
+
+    function formatOrderMessage(cart, name, phone, address, note) {
+      let message = `🛒 ĐƠN HÀNG MỚI\n👤 Khách: ${name}\n📞 SĐT: ${phone}\n🏠 Địa chỉ: ${address}\n📝 Ghi chú: ${note || "Không có"}\n\n📦 Món đặt:\n`;
+      let total = 0;
+      cart.forEach(item => {
+        const itemTotal = item.price * item.quantity;
+        message += `🍕 ${item.name} x${item.quantity} = ${itemTotal / 1000}k\n`;
+        total += itemTotal;
+      });
+      message += `\n💰 Tổng cộng: ${total / 1000}k`;
+      return message;
+    }
+
+    document.getElementById('place-order').addEventListener('click', () => {
+      const name = document.getElementById('customer-name').value.trim();
+      const phone = document.getElementById('customer-phone').value.trim();
+      const address = document.getElementById('customer-address').value.trim();
+      const note = document.getElementById('customer-note').value.trim();
+
+      if (!name || !phone || !address) {
+        alert("Vui lòng nhập đầy đủ thông tin khách hàng!");
+        return;
       }
-    })
-    .catch(error => {
-      console.error("Lỗi khi gửi Discord:", error);
-      alert("Có lỗi khi gửi đơn hàng.");
+      if (cart.length === 0) {
+        alert("Bạn chưa chọn món nào.");
+        return;
+      }
+
+      const message = formatOrderMessage(cart, name, phone, address, note);
+      sendDiscordMessage(message);
+      sendOrderToGoogleSheet(name, phone, address, note, cart);
+
+      // Hiển thị phần cảm ơn + thông tin đơn
+      document.getElementById('order-summary').classList.remove('hidden');
+
+      const detailDiv = document.getElementById('order-detail');
+      detailDiv.innerHTML = '';
+      cart.forEach(item => {
+        const p = document.createElement('p');
+        p.textContent = `- ${item.name} x ${item.quantity}`;
+        detailDiv.appendChild(p);
+      });
+      detailDiv.innerHTML += `
+        <hr class="my-2"/>
+        <p><strong>Khách hàng:</strong> ${name}</p>
+        <p><strong>Điện thoại:</strong> ${phone}</p>
+        <p><strong>Địa chỉ:</strong> ${address}</p>
+        ${note ? `<p><strong>Ghi chú:</strong> ${note}</p>` : ''}
+      `;
+
+      // Reset form và cart
+      document.getElementById('customer-name').value = '';
+      document.getElementById('customer-phone').value = '';
+      document.getElementById('customer-address').value = '';
+      document.getElementById('customer-note').value = '';
+      cart = [];
+      renderCart();
     });
-  }
 
-  function formatOrderMessage(cart, name, phone, address, note) {
-    let message = `🛒 ĐƠN HÀNG MỚI\n👤 Khách: ${name}\n📞 SĐT: ${phone}\n🏠 Địa chỉ: ${address}\n📝 Ghi chú: ${note || "Không có"}\n\n📦 Món đặt:\n`;
-    let total = 0;
-    cart.forEach(item => {
-      const itemTotal = item.price * item.quantity;
-      message += `🍕 ${item.name} x${item.quantity} = ${itemTotal / 1000}k\n`;
-      total += itemTotal;
-    });
-    message += `\n💰 Tổng cộng: ${total / 1000}k`;
-    return message;
-  }
-
-  document.getElementById('place-order').addEventListener('click', () => {
-    const name = document.getElementById('customer-name').value.trim();
-    const phone = document.getElementById('customer-phone').value.trim();
-    const address = document.getElementById('customer-address').value.trim();
-    const note = document.getElementById('customer-note').value.trim();
-
-    if (!name || !phone || !address) {
-      alert("Vui lòng nhập đầy đủ thông tin khách hàng!");
-      return;
-    }
-    if (cart.length === 0) {
-      alert("Bạn chưa chọn món nào.");
-      return;
-    }
-
-    const message = formatOrderMessage(cart, name, phone, address, note);
-    sendDiscordMessage(message);
-
-    // Hiển thị phần cảm ơn + thông tin đơn
-    document.getElementById('order-summary').classList.remove('hidden');
-
-    const detailDiv = document.getElementById('order-detail');
-    detailDiv.innerHTML = '';
-    cart.forEach(item => {
-      const p = document.createElement('p');
-      p.textContent = `- ${item.name} x ${item.quantity}`;
-      detailDiv.appendChild(p);
-    });
-    detailDiv.innerHTML += `
-      <hr class="my-2"/>
-      <p><strong>Khách hàng:</strong> ${name}</p>
-      <p><strong>Điện thoại:</strong> ${phone}</p>
-      <p><strong>Địa chỉ:</strong> ${address}</p>
-      ${note ? `<p><strong>Ghi chú:</strong> ${note}</p>` : ''}
-    `;
-
-    alert("Cảm ơn bạn đã đặt hàng!");
-
-    // Reset cart
-    cart = [];
+    // Khởi tạo
+    renderMenu();
     renderCart();
-  });
-
-  renderMenu();
-  renderCart();
-</script>
+  </script>
+</body>
+</html>
