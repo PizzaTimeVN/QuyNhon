@@ -102,130 +102,18 @@
   { id: 46, name: "Trà sữa Thái", price: 20000, category: "Nước", image: "images/tradao.jpg" }
 ];
 
-
-    let cart = [];
-    let currentCategory = 'Pizza S';
-
-    function formatPrice(price) {
-      return price.toLocaleString('vi-VN') + 'đ';
-    }
-
-    function renderMenu() {
-      const container = document.getElementById('menu-container');
-      container.innerHTML = '';
-      const items = pizzaMenu.filter(p => p.category === currentCategory);
-      items.forEach(item => {
-        const div = document.createElement('div');
-        div.className = "border rounded shadow-sm bg-white hover:shadow-md";
-        div.innerHTML = `
-          <img src="${item.image || 'https://via.placeholder.com/150'}" alt="${item.name}" class="w-full h-32 object-cover rounded-t">
-            <div class="p-3">
-            <h3 class="font-bold text-lg">${item.name}</h3>
-            <p class="text-green-600 font-medium">${formatPrice(item.price)}</p>
-            <button data-id="${item.id}" class="add-to-cart mt-2 w-full py-2 bg-green-600 text-white rounded hover:bg-green-700">Thêm vào giỏ</button>
-          </div>
-        `;
-        container.appendChild(div);
-      });
-
-      document.querySelectorAll('.add-to-cart').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const id = parseInt(btn.dataset.id);
-          const product = pizzaMenu.find(p => p.id === id);
-          const existing = cart.find(i => i.id === id);
-          if (existing) existing.quantity += 1;
-          else cart.push({ ...product, quantity: 1 });
-          renderCart();
-        });
-      });
-    }
-
-    function renderCart() {
-      const container = document.getElementById('cart-items');
-      const count = document.getElementById('cart-count');
-      const total = document.getElementById('cart-total');
-      container.innerHTML = '';
-
-      let totalCount = 0;
-      let totalPrice = 0;
-
-      cart.forEach(item => {
-        totalCount += item.quantity;
-        totalPrice += item.quantity * item.price;
-        const div = document.createElement('div');
-        div.className = "flex justify-between items-center border-b pb-2";
-        div.innerHTML = `
-          <div>
-            <h4 class="font-medium">${item.name}</h4>
-            <p class="text-sm text-gray-600">${formatPrice(item.price)} x ${item.quantity}</p>
-          </div>
-          <div class="flex space-x-2">
-            <button class="decrease w-7 h-7 rounded-full border" data-id="${item.id}">-</button>
-            <span>${item.quantity}</span>
-            <button class="increase w-7 h-7 rounded-full border bg-green-600 text-white" data-id="${item.id}">+</button>
-          </div>
-        `;
-        container.appendChild(div);
-      });
-
-      count.textContent = totalCount;
-      total.textContent = formatPrice(totalPrice);
-
-      document.querySelectorAll('.increase').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const id = parseInt(btn.dataset.id);
-          const item = cart.find(i => i.id === id);
-          item.quantity += 1;
-          renderCart();
-        });
-      });
-
-      document.querySelectorAll('.decrease').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const id = parseInt(btn.dataset.id);
-          const item = cart.find(i => i.id === id);
-          if (item.quantity === 1) cart = cart.filter(i => i.id !== id);
-          else item.quantity -= 1;
-          renderCart();
-        });
-      });
-    }
-
-    document.querySelectorAll('.tab').forEach(btn => {
-      btn.addEventListener('click', () => {
-        currentCategory = btn.dataset.category;
-        document.querySelectorAll('.tab').forEach(b => b.classList.remove('text-green-600', 'border-b-2', 'border-green-600'));
-        btn.classList.add('text-green-600', 'border-b-2', 'border-green-600');
-        renderMenu();
-      });
-    });
 <script>
-  document.getElementById("checkout-form").addEventListener("submit", function (e) {
-    e.preventDefault();
+  let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-    const name = document.getElementById("name").value;
-    const phone = document.getElementById("phone").value;
-    const address = document.getElementById("address").value;
+  function formatPrice(price) {
+    return price.toLocaleString("vi-VN") + "₫";
+  }
 
-    const cartItems = JSON.parse(localStorage.getItem("cart")) || [];
-    if (cartItems.length === 0) {
-      alert("Giỏ hàng của bạn đang trống!");
-      return;
-    }
-
-    const orderDetails = cartItems
-      .map((item) => `${item.name} (x${item.quantity}) - ${item.price * item.quantity}₫`)
-      .join("\n");
-
-    const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-
- <script>
   function formatOrderMessage(cart, name, phone, address, note) {
     let message = "🛒 **ĐƠN HÀNG MỚI**\n\n";
     message += `👤 Tên khách hàng: ${name}\n`;
     message += `📞 Số điện thoại: ${phone}\n`;
     message += `📍 Địa chỉ: ${address}\n`;
-
     if (note && note.trim() !== '') {
       message += `📝 Ghi chú: ${note.trim()}\n`;
     }
@@ -237,16 +125,15 @@
       message += `🍕 ${item.name} x${item.quantity} = ${(itemTotal / 1000)}k\n`;
       total += itemTotal;
     });
-
     message += `\n💰 **Tổng cộng:** ${(total / 1000)}k`;
     return message;
   }
 
-  document.getElementById('place-order').addEventListener('click', () => {
-    const name = document.getElementById('customer-name').value.trim();
-    const phone = document.getElementById('customer-phone').value.trim();
-    const address = document.getElementById('customer-address').value.trim();
-    const note = document.getElementById('customer-note').value.trim();
+  document.getElementById("place-order").addEventListener("click", () => {
+    const name = document.getElementById("customer-name").value.trim();
+    const phone = document.getElementById("customer-phone").value.trim();
+    const address = document.getElementById("customer-address").value.trim();
+    const note = document.getElementById("customer-note").value.trim();
 
     if (!name || !phone || !address) {
       alert("Vui lòng nhập đầy đủ thông tin khách hàng!");
@@ -254,44 +141,45 @@
     }
 
     if (cart.length === 0) {
-      alert("Vui lòng thêm sản phẩm vào giỏ hàng!");
+      alert("Giỏ hàng của bạn đang trống!");
       return;
     }
 
     const message = formatOrderMessage(cart, name, phone, address, note);
 
-    // Gửi về Discord Webhook
     fetch("https://discord.com/api/webhooks/1376485604220731392/lOhqRmOulcR_lvUS11rOQxAXzRaitOAnjAYpjx0Fi_PNTHHsSomae0bdrYB1SsSeXBe0", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ content: message })
     })
-    .then(response => {
-      if (response.ok) {
-        alert("Cảm ơn bạn đã đặt hàng! Đơn hàng đã được gửi.");
-        showOrderSummary(name, phone, address, note);
+    .then(res => {
+      if (res.ok) {
+        alert("Cảm ơn bạn! Đơn hàng đã được gửi.");
         cart = [];
+        localStorage.removeItem("cart");
         renderCart();
+        renderOrderSummary(name, phone, address, note);
       } else {
         alert("Không thể gửi đơn hàng. Vui lòng thử lại!");
       }
     })
-    .catch(error => {
-      console.error("Lỗi khi gửi đơn hàng:", error);
-      alert("Có lỗi xảy ra khi gửi đơn hàng!");
+    .catch(err => {
+      console.error("Lỗi gửi webhook:", err);
+      alert("Đã xảy ra lỗi khi gửi đơn hàng!");
     });
   });
 
-  function showOrderSummary(name, phone, address, note) {
+  function renderOrderSummary(name, phone, address, note) {
     const detailDiv = document.getElementById('order-detail');
+    if (!detailDiv) return;
+
     detailDiv.innerHTML = '';
     cart.forEach(item => {
       const p = document.createElement('p');
       p.textContent = `- ${item.name} x ${item.quantity}`;
       detailDiv.appendChild(p);
     });
+
     detailDiv.innerHTML += `
       <hr class="my-2"/>
       <p><strong>Khách hàng:</strong> ${name}</p>
@@ -299,9 +187,8 @@
       <p><strong>Địa chỉ:</strong> ${address}</p>
       ${note ? `<p><strong>Ghi chú:</strong> ${note}</p>` : ''}
     `;
-    document.getElementById('order-summary').classList.remove('hidden');
-  }
 
-  renderMenu();
-  renderCart();
+    const summary = document.getElementById('order-summary');
+    if (summary) summary.classList.remove('hidden');
+  }
 </script>
