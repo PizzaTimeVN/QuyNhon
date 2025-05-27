@@ -103,9 +103,13 @@
 ];
 
 <script>
-  let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
-  function renderMenu() {
+  let cart = [];
+    let currentCategory = 'Pizza S';
+  
+    function formatPrice(price) {
+    return price.toLocaleString("vi-VN") + "₫";
+  }
+function renderMenu() {
       const container = document.getElementById('menu-container');
       container.innerHTML = '';
       const items = pizzaMenu.filter(p => p.category === currentCategory);
@@ -122,10 +126,6 @@
         `;
         container.appendChild(div);
       });
-
-    function formatPrice(price) {
-    return price.toLocaleString("vi-VN") + "₫";
-  }
 
   function formatOrderMessage(cart, name, phone, address, note) {
     let message = "🛒 **ĐƠN HÀNG MỚI**\n\n";
