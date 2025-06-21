@@ -237,12 +237,12 @@
     }
 
   const message = formatOrderMessage(cart, name, phone, address, note);
- fetch("https://script.google.com/macros/s/AKfycbx8GpfHm3EGNPRynBBD5jtHeIgVJqoD9yG8sq2sHquX0Odo7VZU9ZvB8FqlQRjsa9wb/exec", {
+  fetch("https://script.google.com/macros/s/AKfycbx8GpfHm3EGNPRynBBD5jtHeIgVJqoD9yG8sq2sHquX0Odo7VZU9ZvB8FqlQRjsa9wb/exec", {
   method: "POST",
   headers: {
     "Content-Type": "text/plain" // ✅ Không gây ra preflight
   },
-  body: JSON.stringify({ message }) // vẫn gửi JSON nhưng dạng text
+  body: JSON.stringify({ message, apikey: "pizzatime77" }) // vẫn gửi JSON nhưng dạng text
 })
 .then(res => res.json())
 .then(data => {
