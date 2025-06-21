@@ -236,27 +236,25 @@
       return;
     }
 
-    const message = formatOrderMessage(cart, name, phone, address, note);
-
-   fetch("https://script.google.com/macros/s/AKfycbyR_De7XPIRfHTAk0Fxm5xIFFkoLzKb_1B1pNlbpIEzFODGASdxFPbJbxjpFVy8JTYI/exec", {
+  const message = formatOrderMessage(cart, name, phone, address, note);
+ fetch("https://script.google.com/macros/s/AKfycbxjZGEWDDChE2CgCKSxS854-_5s4o6UO3a8As6PQ_LRx5flxLzTtMGhPYomLvxSHiG5/exec", {
   method: "POST",
-  headers: { "Content-Type": "application/json" },
+  headers: {
+    "Content-Type": "application/json"
+  },
   body: JSON.stringify({ message })
 })
-.then(res => {
-  if (res.ok) {
-    alert("Cảm ơn bạn! Đơn hàng đã được gửi. Tụi mình sẽ gọi xác nhận trong vòng ít phút");
-    cart = [];
-    localStorage.removeItem("cart");
-    renderCart();
-    renderOrderSummary(name, phone, address, note);
-  } else {
-    alert("Không thể gửi đơn hàng. Vui lòng thử lại!");
-  }
+.then(res => res.text())
+.then(text => {
+  console.log("Phản hồi:", text);
+  alert("Đơn hàng đã được gửi!");
 })
 .catch(err => {
   console.error("Lỗi gửi webhook:", err);
-  alert("Đã xảy ra lỗi khi gửi đơn hàng!");
+  alert("Không thể gửi đơn hàng!");
+});
+
+
 });
 
   function renderOrderSummary(name, phone, address, note) {
@@ -281,4 +279,5 @@
     const summary = document.getElementById('order-summary');
     if (summary) summary.classList.remove('hidden');
   }
-</script>
+
+</script> 
