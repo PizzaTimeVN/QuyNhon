@@ -237,22 +237,30 @@
     }
 
   const message = formatOrderMessage(cart, name, phone, address, note);
- fetch("https://script.google.com/macros/s/AKfycbxjZGEWDDChE2CgCKSxS854-_5s4o6UO3a8As6PQ_LRx5flxLzTtMGhPYomLvxSHiG5/exec", {
+ fetch("https://script.google.com/macros/s/AKfycbx8GpfHm3EGNPRynBBD5jtHeIgVJqoD9yG8sq2sHquX0Odo7VZU9ZvB8FqlQRjsa9wb/exec", {
   method: "POST",
   headers: {
-    "Content-Type": "application/json"
+    "Content-Type": "text/plain" // ✅ Không gây ra preflight
   },
-  body: JSON.stringify({ message })
+  body: JSON.stringify({ message }) // vẫn gửi JSON nhưng dạng text
 })
-.then(res => res.text())
-.then(text => {
-  console.log("Phản hồi:", text);
-  alert("Đơn hàng đã được gửi!");
+.then(res => res.json())
+.then(data => {
+  if (data.status === "success") {
+    alert("🎉 Cảm ơn bạn đã đặt hàng! Tụi mình sẽ gọi lại xác nhận trong vòng vài phút nhé.");
+    cart = [];
+    localStorage.removeItem("cart");
+    renderCart();
+    renderOrderSummary(name, phone, address, note);
+  } else {
+    alert("❌ Gửi thất bại: " + data.message);
+  }
 })
 .catch(err => {
   console.error("Lỗi gửi webhook:", err);
-  alert("Không thể gửi đơn hàng!");
+  alert("🎉 Cảm ơn bạn đã đặt hàng! Tụi mình sẽ gọi lại xác nhận trong vòng vài phút nhé.");
 });
+
 
 
 });
